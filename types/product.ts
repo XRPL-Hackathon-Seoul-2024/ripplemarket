@@ -7,6 +7,7 @@ export interface IProductProps {
   image: string;
   state: string;
   fulfillment: string;
+  condition: string;
   buyer: string;
   owner: string;
 }

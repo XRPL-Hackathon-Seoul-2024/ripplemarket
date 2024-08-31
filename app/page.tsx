@@ -13,11 +13,14 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {useRecoilValue} from "recoil";
+import {accountState} from "@/atom/account";
 
 export default function Home() {
   const router = useRouter();
 
   const { data: products } = useProducts();
+  const account = useRecoilValue(accountState);
 
   return (
     <main className="flex min-h-screen flex-col items-center p-20 bg-green-500">
@@ -49,7 +52,7 @@ export default function Home() {
                   <Badge className="text-lg" variant="outline">
                     {product.state}
                   </Badge>
-                  {product.state === "Sell" && (
+                  {product.state === "Sell" && product.owner !== account && (
                     <Button
                       onClick={() => router.push(`/products/${product.id}`)}
                     >

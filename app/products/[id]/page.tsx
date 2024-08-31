@@ -34,7 +34,7 @@ export default function Home() {
     };
 
     init();
-  }, []);
+  }, [product]);
 
   const onSendTransaction = useCallback(async () => {
     if (!product) {
@@ -53,10 +53,53 @@ export default function Home() {
       },
     });
     console.log(txSign);
-  }, []);
+  }, [product]);
 
-  const onEscrowSendTransaction = useCallback(async () => {
+
+  const onApprove = async() => {
+    await pb.collection("ripplemarket").update(product.id, {
+       state: "Approve",
+    });
+    window.location.reload();
+  }
+  const onReceive =async() => {
+    if (!account){
+      alert('account loding..')
+      return;
+    }
+    if (!product) {
+      return;
+    }
+    console.log(product)
+    const tx = {
+      TransactionType: "EscrowFinish",
+      Account: account,
+      Owner: product.buyer,
+      OfferSequence: product.sequence, // 에스크로 트랜잭션의 시퀀스 번호
+      Condition: product.condition, // 생성된 조건
+      Fulfillment: product.fulfillment
+    };
+
+    console.log(tx)
+    const txSign: any = await provider?.request({
+      method: "xrpl_submitTransaction",
+      params: {
+        transaction: tx,
+      },
+    });
+    console.log("txSign : ",txSign)
+    await pb.collection("ripplemarket").update(product.id, {
+      state: "Complete",
+    });
+    //window.location.reload()
+  }
+  const onEscrowSendTransaction = async () => {
     try {
+
+      if (!account){
+        alert('account loding..')
+        return;
+      }
       const preimageData = crypto.randomBytes(32);
 
       // Create a new PreimageSha256 fulfillment
@@ -70,10 +113,11 @@ export default function Home() {
         .toUpperCase();
       console.log("Condition in hex format: ", conditionHex);
 
-      let finishAfter = new Date(new Date().getTime() / 1000 + 60 * 60);
-      finishAfter = new Date(finishAfter.getTime() * 1000);
+      let finishAfter = new Date(new Date().getTime() / 1000);
+      finishAfter = new Date(finishAfter.getTime() * 1000 + 3);
       console.log("This escrow will finish after!!: ", finishAfter);
 
+      console.log(product)
       if (!product) {
         return;
       }
@@ -86,6 +130,7 @@ export default function Home() {
         Condition: conditionHex, // SHA-256 해시 조건
         FinishAfter: isoTimeToRippleTime(finishAfter.toISOString()), // Refer for more details: https://xrpl.org/basic-data-types.html#specifying-time
       };
+      console.log("tx", tx)
       const txSign: any = await provider?.request({
         method: "xrpl_submitTransaction",
         params: {
@@ -107,20 +152,21 @@ export default function Home() {
 
       await pb.collection("ripplemarket").update(product.id, {
         txhash: txHash,
-        fullfillment: myFulfillment
+        fulfillment: myFulfillment
           .serializeBinary()
           .toString("hex")
           .toUpperCase(),
         condition: conditionHex,
         sequence: txSign.result.tx_json.Sequence,
         state: "Reserved",
+        buyer: account,
       });
       alert("Escrow Success");
       window.location.reload();
     } catch (error) {
       console.log("error", error);
     }
-  }, []);
+  };
 
   return (
     <main className="flex min-h-screen flex-col items-center p-10 bg-green-500">
@@ -137,7 +183,7 @@ export default function Home() {
             <h1>Price : {product.price} XRP</h1>
             <h1>Available : {balance} XRP</h1>
 
-            {product?.state === "Sell" && product?.owner !== account && (
+            {product?.state == "Sell" && product?.owner !== account && (
               <div className="flex space-x-4">
                 <Button onClick={onSendTransaction}>Buy</Button>
                 <Button onClick={onEscrowSendTransaction}>Escrow Buy</Button>
@@ -149,11 +195,15 @@ export default function Home() {
                 <Button onClick={onSendTransaction}>Delete</Button>
               </div>
             )}
-
             {product?.state === "Reserved" && product?.buyer === account && (
               <div className="flex space-x-4">
-                <Button onClick={onSendTransaction}>Approve</Button>
+                <Button onClick={onApprove}>Approve</Button>
               </div>
+            )}
+            {product?.state === "Approve" && product?.owner === account && (
+                <div className="flex space-x-4">
+                  <Button onClick={onReceive}>Receive</Button>
+                </div>
             )}
           </div>
         </div>

@@ -81,6 +81,7 @@ export const Wallet: React.FC = () => {
       if (!accounts) {
         return;
       }
+      console.log(accounts[0])
 
       const accountInfo: any = await provider?.request({
         method: "account_info",
@@ -94,10 +95,17 @@ export const Wallet: React.FC = () => {
         ],
       });
       const account = accountInfo?.account_data?.Account;
+      console.log(account)
       setAccount(account);
       const balance = accountInfo?.account_data?.Balance;
-      const decimalBalance = (BigInt(balance) / BigInt(1000000)).toString();
-      setBalance(decimalBalance);
+      if(!balance){
+        const decimalBalance = (BigInt(balance) / BigInt(1000000)).toString();
+        setBalance(decimalBalance);
+      }else{
+        setBalance("0");
+      }
+
+
     };
     if (loggedIn) {
       loadAccount();
