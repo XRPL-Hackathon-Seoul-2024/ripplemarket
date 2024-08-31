@@ -41,7 +41,7 @@ export default function Home() {
       });
       console.log("Funded wallet address:", response.data.account.address);
       window.location.reload()
-    } catch (error) {
+    } catch (error:any) {
       console.error("Error funding wallet:", error.message);
     }
   }
