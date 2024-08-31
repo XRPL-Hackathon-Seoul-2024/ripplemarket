@@ -11,4 +11,5 @@ export interface IProductProps {
   buyer: string;
   owner: string;
   issue: string;
+  sequence: number;
 }

@@ -83,27 +83,32 @@ export const Wallet: React.FC = () => {
       }
       console.log(accounts[0]);
 
-      const accountInfo: any = await provider?.request({
-        method: "account_info",
-        params: [
-          {
-            account: accounts[0],
-            strict: true,
-            ledger_index: "current",
-            queue: true,
-          },
-        ],
-      });
-      const account = accountInfo?.account_data?.Account;
-      console.log(account);
-      setAccount(account);
-      const balance = accountInfo?.account_data?.Balance;
-      if (balance) {
-        const decimalBalance = (BigInt(balance) / BigInt(1000000)).toString();
-        setBalance(decimalBalance);
-      } else {
+      try {
+        const accountInfo: any = await provider?.request({
+          method: "account_info",
+          params: [
+            {
+              account: accounts[0],
+              strict: true,
+              ledger_index: "current",
+              queue: true,
+            },
+          ],
+        });
+        const account = accounts[0];
+        console.log(account);
+        setAccount(account);
+        const balance = accountInfo?.account_data?.Balance;
+        if (balance) {
+          const decimalBalance = (BigInt(balance) / BigInt(1000000)).toString();
+          setBalance(decimalBalance);
+        } else {
+          setBalance("0");
+        }
+      }catch {
         setBalance("0");
       }
+
     };
     if (loggedIn) {
       loadAccount();

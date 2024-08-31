@@ -57,6 +57,9 @@ export default function Home() {
 
 
   const onApprove = async() => {
+    if (!product) {
+      return;
+    }
     await pb.collection("ripplemarket").update(product.id, {
        state: "Approve",
     });
