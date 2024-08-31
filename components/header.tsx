@@ -23,10 +23,26 @@ export const Header: React.FC = () => {
         <Button
           variant="ghost"
           onClick={() => {
-            router.push("/my");
+            router.push("/charge");
           }}
         >
-          My
+          Charge XRP
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            router.push("/my-buy");
+          }}
+        >
+          My Buy
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            router.push("/my-sell");
+          }}
+        >
+          My Sell
         </Button>
         <Wallet />
       </div>

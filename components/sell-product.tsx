@@ -35,7 +35,7 @@ export const SellProduct: React.FC = () => {
   const account = useRecoilValue(accountState);
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const title = "Make store";
+  const title = "Sell Product";
   const action = "Create";
 
   const form = useForm<FormValues>({
@@ -84,7 +84,7 @@ export const SellProduct: React.FC = () => {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Store name</FormLabel>
+                  <FormLabel>Product name</FormLabel>
                   <FormControl>
                     <Input
                       disabled={loading}

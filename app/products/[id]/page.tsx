@@ -37,7 +37,9 @@ export default function Home() {
   }, []);
 
   const onSendTransaction = useCallback(async () => {
-    console.log(product)
+    if (!product) {
+      return;
+    }
     const tx = {
       TransactionType: "Payment",
       Account: account,
@@ -50,7 +52,7 @@ export default function Home() {
         transaction: tx,
       },
     });
-    console.log(txSign)
+    console.log(txSign);
   }, []);
 
   const onEscrowSendTransaction = useCallback(async () => {
@@ -135,10 +137,22 @@ export default function Home() {
             <h1>Price : {product.price} XRP</h1>
             <h1>Available : {balance} XRP</h1>
 
-            {product?.state === "Sell" && (
+            {product?.state === "Sell" && product?.owner !== account && (
               <div className="flex space-x-4">
                 <Button onClick={onSendTransaction}>Buy</Button>
                 <Button onClick={onEscrowSendTransaction}>Escrow Buy</Button>
+              </div>
+            )}
+
+            {product?.state === "Sell" && product?.owner === account && (
+              <div className="flex space-x-4">
+                <Button onClick={onSendTransaction}>Delete</Button>
+              </div>
+            )}
+
+            {product?.state === "Reserved" && product?.buyer === account && (
+              <div className="flex space-x-4">
+                <Button onClick={onSendTransaction}>Approve</Button>
               </div>
             )}
           </div>
