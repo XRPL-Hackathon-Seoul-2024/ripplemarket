@@ -47,7 +47,7 @@ export default function Home() {
           <h1>Buy XRP on The Root Network - Fiat On Ramp</h1>
         </div>
         <div className="space-x-10">
-          <Button onClick={() => bridge()}>Fiat On Ramp</Button>
+          <Button onClick={() => bridge()}>Bridge</Button>
           <h1>Move XRP From "The Root Network" To "XRP Ledger"</h1>
         </div>
       </div>

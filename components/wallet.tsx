@@ -16,7 +16,7 @@ export const Wallet: React.FC = () => {
   const [account, setAccount] = useRecoilState(accountState);
   const [balance, setBalance] = useRecoilState(balanceState);
   const clientId =
-      "BGUM9pLACidLnpI8zYVxTONoaKHV59U8-5Cw9vjdLaIn9r6RU0TLCItXpLsDjVQPAcfcWKlWVm9CDU5mBlElX0M";
+    "BGUM9pLACidLnpI8zYVxTONoaKHV59U8-5Cw9vjdLaIn9r6RU0TLCItXpLsDjVQPAcfcWKlWVm9CDU5mBlElX0M";
 
   const chainConfig = {
     chainNamespace: CHAIN_NAMESPACES.XRPL,
@@ -33,7 +33,7 @@ export const Wallet: React.FC = () => {
   const privateKeyProvider = new XrplPrivateKeyProvider({
     config: { chainConfig },
   });
-   const web3auth = new Web3Auth({
+  const web3auth = new Web3Auth({
     clientId,
     privateKeyProvider,
     web3AuthNetwork: "sapphire_devnet",
@@ -81,7 +81,7 @@ export const Wallet: React.FC = () => {
       if (!accounts) {
         return;
       }
-      console.log(accounts[0])
+      console.log(accounts[0]);
 
       const accountInfo: any = await provider?.request({
         method: "account_info",
@@ -95,17 +95,15 @@ export const Wallet: React.FC = () => {
         ],
       });
       const account = accountInfo?.account_data?.Account;
-      console.log(account)
+      console.log(account);
       setAccount(account);
       const balance = accountInfo?.account_data?.Balance;
-      if(!balance){
+      if (balance) {
         const decimalBalance = (BigInt(balance) / BigInt(1000000)).toString();
         setBalance(decimalBalance);
-      }else{
+      } else {
         setBalance("0");
       }
-
-
     };
     if (loggedIn) {
       loadAccount();
