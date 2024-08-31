@@ -36,11 +36,22 @@ export default function Home() {
     init();
   }, []);
 
-  const onSendTransaction = useCallback(() => {
-    if (!product) {
-      return;
-    }
-  }, [product]);
+  const onSendTransaction = useCallback(async () => {
+    console.log(product)
+    const tx = {
+      TransactionType: "Payment",
+      Account: account,
+      Amount: xrpToDrops(product.price),
+      Destination: product.owner,
+    };
+    const txSign = await provider?.request({
+      method: "xrpl_submitTransaction",
+      params: {
+        transaction: tx,
+      },
+    });
+    console.log(txSign)
+  }, []);
 
   const onEscrowSendTransaction = useCallback(async () => {
     try {
