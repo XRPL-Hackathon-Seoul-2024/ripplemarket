@@ -56,7 +56,9 @@ export default function Home() {
                   </form>
                 </CardContent>
                 <CardFooter className="flex justify-between">
-                  <Badge variant="outline">{product.state}</Badge>
+                  <Badge className="text-lg" variant="outline">
+                    {product.state}
+                  </Badge>
                   <Button
                     onClick={() => router.push(`/products/${product.id}`)}
                   >

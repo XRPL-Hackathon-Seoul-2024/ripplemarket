@@ -6,95 +6,107 @@ import { Button } from "@/components/ui/button";
 import useProduct from "@/hooks/useProduct";
 import Image from "next/image";
 import { useParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRecoilValue } from "recoil";
 import crypto from "crypto";
-import { newPreimageSha256 } from 'five-bells-condition';
-import {IProvider} from "@web3auth/base";
-import {isoTimeToRippleTime, xrpToDrops} from "xrpl";
+import { IProvider } from "@web3auth/base";
+import { isoTimeToRippleTime, xrpToDrops } from "xrpl";
+import { PreimageSha256 } from "five-bells-condition";
+import { accountState } from "@/atom/account";
+import { web3auth } from "@/utils/web3-auth";
 
 export default function Home() {
   const params = useParams();
   const { id } = params as { id: string };
   const balance = useRecoilValue(balanceState);
+  const account = useRecoilValue(accountState);
   const { data: product } = useProduct(id);
   const [provider, setProvider] = useState<IProvider | null>(null);
-  const [count, setCount] = useState("1");
-  const [tip, setTip] = useState("10");
 
-  const price = () => {
-    if (!product) {
-      return 0;
-    }
-    const price = +product.price;
-    const cnt = +count;
-    const percent = +tip;
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await web3auth.initModal();
+        setProvider(web3auth.provider);
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
-    const amount = price * cnt + (price * cnt * percent) / 100;
-
-    return amount;
-  };
+    init();
+  }, []);
 
   const onSendTransaction = useCallback(() => {
     if (!product) {
       return;
     }
-  }, [product, count, tip]);
+  }, [product]);
 
   const onEscrowSendTransaction = useCallback(async () => {
     try {
-      const accounts:any = await provider?.request<string[]>({
-        method: "xrpl_getAccounts",
-      });
       const preimageData = crypto.randomBytes(32);
 
       // Create a new PreimageSha256 fulfillment
-      const myFulfillment:any = newPreimageSha256();
+      const myFulfillment = new PreimageSha256();
       myFulfillment.setPreimage(preimageData);
 
       // Get the condition in hex format
-      const conditionHex = myFulfillment.getConditionBinary().toString('hex').toUpperCase();
+      const conditionHex = myFulfillment
+        .getConditionBinary()
+        .toString("hex")
+        .toUpperCase();
       console.log("Condition in hex format: ", conditionHex);
 
-      let finishAfter = new Date((new Date().getTime() / 1000) + (60 * 60)); // 2 minutes from now
-      finishAfter = new Date(finishAfter * 1000);
+      let finishAfter = new Date(new Date().getTime() / 1000 + 60 * 60);
+      finishAfter = new Date(finishAfter.getTime() * 1000);
       console.log("This escrow will finish after!!: ", finishAfter);
 
-
-
-      if (accounts && accounts.length > 0) {
-        const tx = {
-          TransactionType: "EscrowCreate",
-          Account: accounts[0] as string,
-          Amount: xrpToDrops(2),
-          Destination: "r3SDwngjcnRic1VSxyeaX7iUUaHEEtAY4J",
-          Condition: conditionHex, // SHA-256 해시 조건
-          FinishAfter: isoTimeToRippleTime(finishAfter.toISOString()), // Refer for more details: https://xrpl.org/basic-data-types.html#specifying-time
-        };
-        const txSign:any = await provider?.request({
-          method: "xrpl_submitTransaction",
-          params: {
-            transaction: tx,
-          },
-        });
-
-        console.log("txRes", txSign);
-        console.log("txRes.result.tx_json.OfferSequence :", txSign.result.tx_json.Sequence);
-        console.log("condition : ", conditionHex);
-        console.log("fullfillment : ", myFulfillment.serializeBinary().toString('hex').toUpperCase());
-        // Extract the OfferSequence from the transaction result
-
-        // Check the result of the transaction submission
-        const txHash = txSign.result.tx_json.hash; // Extract transaction hash from the response
-        console.log("Transaction Hash:", txHash);
-
-      } else {
-        console.log("failed to fetch accounts");
+      if (!product) {
+        return;
       }
+
+      const tx = {
+        TransactionType: "EscrowCreate",
+        Account: account,
+        Amount: xrpToDrops(product.price),
+        Destination: product.owner,
+        Condition: conditionHex, // SHA-256 해시 조건
+        FinishAfter: isoTimeToRippleTime(finishAfter.toISOString()), // Refer for more details: https://xrpl.org/basic-data-types.html#specifying-time
+      };
+      const txSign: any = await provider?.request({
+        method: "xrpl_submitTransaction",
+        params: {
+          transaction: tx,
+        },
+      });
+
+      console.log("txRes", txSign);
+      console.log(
+        "txRes.result.tx_json.OfferSequence :",
+        txSign.result.tx_json.Sequence
+      );
+      console.log("condition : ", conditionHex);
+      console.log(
+        "fullfillment : ",
+        myFulfillment.serializeBinary().toString("hex").toUpperCase()
+      );
+      const txHash = txSign.result.tx_json.hash; // Extract transaction hash from the response
+
+      await pb.collection("ripplemarket").update(product.id, {
+        txhash: txHash,
+        fullfillment: myFulfillment
+          .serializeBinary()
+          .toString("hex")
+          .toUpperCase(),
+        condition: conditionHex,
+        sequence: txSign.result.tx_json.Sequence,
+        state: "Reserved",
+      });
+      alert("Escrow Success");
+      window.location.reload();
     } catch (error) {
       console.log("error", error);
     }
-
   }, []);
 
   return (
@@ -112,10 +124,12 @@ export default function Home() {
             <h1>Price : {product.price} XRP</h1>
             <h1>Available : {balance} XRP</h1>
 
-            <div className="flex space-x-4">
-              <Button onClick={onSendTransaction}>Buy</Button>
-              <Button onClick={onEscrowSendTransaction}>Escrow Buy</Button>
-            </div>
+            {product?.state === "Sell" && (
+              <div className="flex space-x-4">
+                <Button onClick={onSendTransaction}>Buy</Button>
+                <Button onClick={onEscrowSendTransaction}>Escrow Buy</Button>
+              </div>
+            )}
           </div>
         </div>
       )}
