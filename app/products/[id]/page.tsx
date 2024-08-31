@@ -40,6 +40,10 @@ export default function Home() {
     if (!product) {
       return;
     }
+    if (!account){
+      alert('account loading..')
+      return;
+    }
     const tx = {
       TransactionType: "Payment",
       Account: account,
@@ -53,6 +57,12 @@ export default function Home() {
       },
     });
     console.log(txSign);
+    await pb.collection("ripplemarket").update(product.id, {
+      state: "Completed",
+      buyer: account,
+    });
+    alert("Buy Success");
+    window.location.reload();
   }, [product]);
 
 
@@ -67,7 +77,7 @@ export default function Home() {
   }
   const onReceive =async() => {
     if (!account){
-      alert('account loding..')
+      alert('account loading..')
       return;
     }
     if (!product) {
