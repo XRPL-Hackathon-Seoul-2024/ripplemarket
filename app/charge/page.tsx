@@ -7,11 +7,15 @@ import { trnWeb3auth as web3auth } from "@/utils/trn-web3-auth";
 import { useEffect, useState } from "react";
 import { IProvider } from "@web3auth/base";
 import { set } from "react-hook-form";
+import {useRecoilValue} from "recoil";
+import {accountState} from "@/atom/account";
+import axios from "axios";
 
 export default function Home() {
   const [walletServicesPlugin, setWalletServicesPlugin] =
     useState<WalletServicesPlugin>();
   const [provider, setProvider] = useState<IProvider | null>(null);
+  const account = useRecoilValue(accountState);
   const fiat = async () => {
     if (!walletServicesPlugin) {
       const walletServicesPlugin = new WalletServicesPlugin({
@@ -26,6 +30,21 @@ export default function Home() {
   };
 
   const bridge = async () => {};
+  const faucet = async () => {
+    const faucetUrl = `https://faucet.altnet.rippletest.net/accounts`;
+    if(!account){
+      alert("Please login to your wallet")
+    }
+    try {
+      const response = await axios.post(faucetUrl, { destination: account }, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      console.log("Funded wallet address:", response.data.account.address);
+      window.location.reload()
+    } catch (error) {
+      console.error("Error funding wallet:", error.message);
+    }
+  }
 
   useEffect(() => {
     const init = async () => {
@@ -49,6 +68,10 @@ export default function Home() {
         <div className="space-x-10">
           <Button onClick={() => bridge()}>Bridge</Button>
           <h1>Move XRP From "The Root Network" To "XRP Ledger"</h1>
+        </div>
+        <div className="space-x-10">
+          <Button onClick={() => faucet()}>Faucet</Button>
+          <h1>Get XRP From Faucet</h1>
         </div>
       </div>
     </main>
