@@ -30,8 +30,8 @@ export default function Home() {
   }, [account, products]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-10 bg-green-500">
-      <div className="flex space-x-4 pb-4">
+    <main className="flex min-h-screen flex-col items-center p-20 bg-green-500">
+      <div className="flex flex-wrap gap-10 w-3/5">
         {myProducts &&
           myProducts.map((product) => {
             return (

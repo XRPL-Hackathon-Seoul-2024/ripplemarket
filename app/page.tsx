@@ -20,8 +20,8 @@ export default function Home() {
   const { data: products } = useProducts();
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-10 bg-green-500">
-      <div className="flex space-x-4 pb-4">
+    <main className="flex min-h-screen flex-col items-center p-20 bg-green-500">
+      <div className="flex flex-wrap gap-10 w-3/5">
         {products &&
           products.map((product) => {
             return (
