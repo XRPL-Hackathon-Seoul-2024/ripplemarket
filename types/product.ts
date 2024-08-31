@@ -10,4 +10,5 @@ export interface IProductProps {
   condition: string;
   buyer: string;
   owner: string;
+  issue: string;
 }

@@ -23,7 +23,7 @@ export default function Home() {
   const account = useRecoilValue(accountState);
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-20 bg-green-500">
+    <main className="flex min-h-screen flex-col items-center py-10 bg-green-500">
       <div className="flex flex-wrap gap-10 w-3/5">
         {products &&
           products.map((product) => {

@@ -1,28 +1,28 @@
 import { CHAIN_NAMESPACES } from "@web3auth/base";
-import { XrplPrivateKeyProvider } from "@web3auth/xrpl-provider";
+import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
 import { Web3Auth } from "@web3auth/modal";
 
 const clientId =
   "BGUM9pLACidLnpI8zYVxTONoaKHV59U8-5Cw9vjdLaIn9r6RU0TLCItXpLsDjVQPAcfcWKlWVm9CDU5mBlElX0M";
 
 const chainConfig = {
-  chainNamespace: CHAIN_NAMESPACES.XRPL,
-  chainId: "0x2",
-  rpcTarget: "https://testnet-ripple-node.tor.us",
-  wsTarget: "wss://s.altnet.rippletest.net",
+  chainNamespace: CHAIN_NAMESPACES.EIP155,
+  chainId: "0x1df8",
+  rpcTarget: "https://porcini.rootnet.app/archive",
+  wsTarget: "wss://porcini.rootnet.app/archive/ws",
   ticker: "XRP",
   logo: "https://web3auth.io/images/web3auth-logo.svg",
   tickerName: "XRPL",
-  displayName: "xrpl testnet",
-  blockExplorerUrl: "https://testnet.xrpl.org",
+  displayName: "trn testnet",
+  blockExplorerUrl: "https://porcini.rootscan.io",
   clientId: "",
 };
 
-const privateKeyProvider = new XrplPrivateKeyProvider({
+const privateKeyProvider = new EthereumPrivateKeyProvider({
   config: { chainConfig },
 });
 
-export const web3auth = new Web3Auth({
+export const trnWeb3auth = new Web3Auth({
   clientId,
   uiConfig: {
     logoLight: "https://web3auth.io/images/web3auth-logo.svg",
